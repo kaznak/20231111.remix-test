@@ -12,7 +12,24 @@ import { RemixServer } from "@remix-run/react";
 import isbot from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 
+import {
+  ApolloProvider,
+  ApolloClient,
+  InMemoryCache,
+  createHttpLink,
+  NormalizedCacheObject,
+} from "@apollo/client";
+import { getDataFromTree } from "@apollo/client/react/ssr";
+
 const ABORT_DELAY = 5_000;
+
+function apolloStateSerializer(state: NormalizedCacheObject): string {
+  return JSON.stringify(state).replace(/</g, "\\u003c");
+  /*
+  The replace call escapes the < character to prevent cross-site scripting attacks
+  that are possible via the presence of </script> in a string literal  
+  */
+}
 
 export default function handleRequest(
   request: Request,
@@ -42,14 +59,40 @@ function handleBotRequest(
   responseHeaders: Headers,
   remixContext: EntryContext,
 ) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     let shellRendered = false;
+    const apolloClient = new ApolloClient({
+      ssrMode: true,
+      cache: new InMemoryCache(),
+      link: createHttpLink({
+        uri: "https://flyby-gateway.herokuapp.com/", // from Apollo's Voyage tutorial series (https://www.apollographql.com/tutorials/voyage-part1/)
+        headers: request.headers as any, // TODO: fix this type error
+        credentials: request.credentials ?? "include", // or "same-origin" if your backend server is the same domain
+      }),
+    });
+    const App = (
+      <ApolloProvider client={apolloClient}>
+        <RemixServer
+          context={remixContext}
+          url={request.url}
+          abortDelay={ABORT_DELAY}
+        />
+      </ApolloProvider>
+    );
+
+    await getDataFromTree(App);
+    const initialState = apolloClient.extract();
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer
-        context={remixContext}
-        url={request.url}
-        abortDelay={ABORT_DELAY}
-      />,
+      <>
+        {App}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__APOLLO_STATE__=${apolloStateSerializer(
+              initialState,
+            )}`,
+          }}
+        />
+      </>,
       {
         onAllReady() {
           shellRendered = true;
@@ -92,14 +135,40 @@ function handleBrowserRequest(
   responseHeaders: Headers,
   remixContext: EntryContext,
 ) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     let shellRendered = false;
+    const apolloClient = new ApolloClient({
+      ssrMode: true,
+      cache: new InMemoryCache(),
+      link: createHttpLink({
+        uri: "https://flyby-gateway.herokuapp.com/", // from Apollo's Voyage tutorial series (https://www.apollographql.com/tutorials/voyage-part1/)
+        headers: request.headers as any, // TODO: fix this type error
+        credentials: request.credentials ?? "include", // or "same-origin" if your backend server is the same domain
+      }),
+    });
+    const App = (
+      <ApolloProvider client={apolloClient}>
+        <RemixServer
+          context={remixContext}
+          url={request.url}
+          abortDelay={ABORT_DELAY}
+        />
+      </ApolloProvider>
+    );
+
+    await getDataFromTree(App);
+    const initialState = apolloClient.extract();
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer
-        context={remixContext}
-        url={request.url}
-        abortDelay={ABORT_DELAY}
-      />,
+      <>
+        {App}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__APOLLO_STATE__=${apolloStateSerializer(
+              initialState,
+            )}`,
+          }}
+        />
+      </>,
       {
         onShellReady() {
           shellRendered = true;
