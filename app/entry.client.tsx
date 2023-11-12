@@ -7,12 +7,20 @@
 import { RemixBrowser } from "@remix-run/react";
 import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
+import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 
 startTransition(() => {
+  const apolloClient = new ApolloClient({
+    cache: new InMemoryCache().restore(window.__APOLLO_STATE__),
+    uri: "https://flyby-gateway.herokuapp.com/", // the same uri in our entry.server file
+  });
+
   hydrateRoot(
     document,
     <StrictMode>
-      <RemixBrowser />
+      <ApolloProvider client={apolloClient}>
+        <RemixBrowser />
+      </ApolloProvider>
     </StrictMode>,
   );
 });
