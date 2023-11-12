@@ -38,7 +38,15 @@ Make sure to deploy the output of `remix build`
 - `public/build/`
 
 ## Memo
+### runtime error on remix module system
 
+`@apollo/client` raises error in runtime about module system.
+I have solved the problem by following the below articles.
+
+- [Gotchas / Importing ESM Packages](https://remix.run/docs/en/main/guides/gotchas#importing-esm-packages)
+  - [remix.config.js / serverDependenciesToBundle](https://remix.run/docs/en/main/file-conventions/remix-config#serverdependenciestobundle)
+
+### CORS error on GraphQL 
 The endpoint `https://flyby-gateway.herokuapp.com/` returns 503 for a CORS preflight request.
 This is not a correct behavior for the CORS preflight request.
 The server must be broken in this point of view.
