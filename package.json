@@ -29,6 +29,9 @@
     "typescript": "^5.2.2"
   },
   "engines": {
-    "node": ">=18.0.0"
-  }
+    "node": ">=18.0.0",
+    "pnpm": "^8.10.2",
+    "npm": "please_use_pnpm_instead"
+  },
+  "packageManager": "pnpm@8.10.2"
 }
