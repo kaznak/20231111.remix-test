@@ -46,6 +46,8 @@ I have solved the problem by following the below articles.
 - [Gotchas / Importing ESM Packages](https://remix.run/docs/en/main/guides/gotchas#importing-esm-packages)
   - [remix.config.js / serverDependenciesToBundle](https://remix.run/docs/en/main/file-conventions/remix-config#serverdependenciestobundle)
 
+But this is odd becase the `@apollo/client` provides both of ESM and CJS modules.
+
 ### CORS error on GraphQL 
 The endpoint `https://flyby-gateway.herokuapp.com/` returns 503 for a CORS preflight request.
 This is not a correct behavior for the CORS preflight request.
