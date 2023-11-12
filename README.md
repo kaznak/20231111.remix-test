@@ -36,3 +36,9 @@ Make sure to deploy the output of `remix build`
 
 - `build/`
 - `public/build/`
+
+## Memo
+
+The endpoint `https://flyby-gateway.herokuapp.com/` returns 503 for a CORS preflight request.
+This is not a correct behavior for the CORS preflight request.
+The server must be broken in this point of view.
